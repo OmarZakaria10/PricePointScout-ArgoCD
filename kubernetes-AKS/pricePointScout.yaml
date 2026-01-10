@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: pricepointscout
-        image: omarzakaria10/price-point-scout:8644503c41e45df09c66c4b04cf0bee66dbded7e
+        image: omarzakaria10/price-point-scout:07e1a955e6d016d45c4459893f27aafddba475c3
         resources:
           requests:
             cpu: "1"
