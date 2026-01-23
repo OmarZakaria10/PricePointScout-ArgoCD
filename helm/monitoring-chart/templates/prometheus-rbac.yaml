@@ -1,20 +1,26 @@
-# RBAC Configuration for Prometheus
-# This allows Prometheus to discover and scrape pods across namespaces
-
+{{- if .Values.prometheus.enabled }}
 # Service Account for Prometheus
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: prometheus
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
 ---
 # Cluster Role with necessary permissions
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: prometheus
+  labels:
+    app: prometheus
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
 rules:
-# Allow reading nodes (for node-exporter discovery)
+# Allow reading nodes (for node-exporter discovery and cadvisor metrics)
 - apiGroups: [""]
   resources:
   - nodes
@@ -57,6 +63,10 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: prometheus
+  labels:
+    app: prometheus
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -64,4 +74,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
+{{- end }}

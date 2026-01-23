@@ -1,0 +1,252 @@
+<mxfile host="app.diagrams.net" modified="2025-11-06T12:00:00.000Z" agent="5.0" version="22.0.0" type="device">
+  <diagram name="PricePointScout Architecture" id="architecture">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Internet / Users -->
+        <mxCell id="internet" value="Internet Users" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#e1f5ff;strokeColor=#0099ff;" vertex="1" parent="1">
+          <mxGeometry x="700" y="20" width="200" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Ingress Controller -->
+        <mxCell id="ingress-lb" value="NGINX Ingress Controller&#xa;LoadBalancer: 129.212.192.141" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ff9800;" vertex="1" parent="1">
+          <mxGeometry x="700" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Connection from users to ingress -->
+        <mxCell id="edge1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="internet" target="ingress-lb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- PPS Namespace Container -->
+        <mxCell id="pps-namespace" value="pps-namespace" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;startSize=30;" vertex="1" parent="1">
+          <mxGeometry x="100" y="240" width="1000" height="480" as="geometry" />
+        </mxCell>
+        
+        <!-- Ingress Resource -->
+        <mxCell id="ingress-resource" value="Ingress Resource&#xa;Path: /api/*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#ff9800;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="400" y="50" width="200" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- App Service -->
+        <mxCell id="app-service" value="Service&#xa;pricepointscout-service&#xa;ClusterIP: 8080" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#2196f3;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="400" y="130" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- App Pods -->
+        <mxCell id="app-pod-1" value="App Pod 1&#xa;Port: 8080&#xa;/metrics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="250" y="220" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="app-pod-2" value="App Pod 2&#xa;Port: 8080&#xa;/metrics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="440" y="220" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="app-pod-3" value="App Pod 3&#xa;Port: 8080&#xa;/metrics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="630" y="220" width="120" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- HPA -->
+        <mxCell id="hpa" value="HPA&#xa;Min: 1, Max: 5&#xa;CPU: 70%, Mem: 75%" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ff9800;dashed=1;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="800" y="220" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- ConfigMap & Secret -->
+        <mxCell id="configmap" value="ConfigMap&#xa;DATABASE URL&#xa;JWT Config" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#e1f5ff;strokeColor=#0288d1;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="800" y="50" width="150" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="secret" value="Secret&#xa;JWT_SECRET&#xa;JWT_EXPIRES_IN" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffebee;strokeColor=#f44336;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="800" y="140" width="150" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- MongoDB -->
+        <mxCell id="mongo-service" value="MongoDB Headless Service&#xa;mongodb-headless-service:27017" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#9c27b0;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="80" y="330" width="220" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="mongo-0" value="mongodb-0&#xa;PRIMARY&#xa;PVC: 1Gi&#xa;rs0" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f3e5f5;strokeColor=#9c27b0;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="50" y="400" width="100" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="mongo-1" value="mongodb-1&#xa;SECONDARY&#xa;PVC: 1Gi&#xa;rs0" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f3e5f5;strokeColor=#9c27b0;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="230" y="400" width="100" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- MongoDB Init Job -->
+        <mxCell id="mongo-init" value="Init Job&#xa;rs.initiate()&#xa;Helm Hook" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ff9800;dashed=1;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="360" y="420" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Redis -->
+        <mxCell id="redis-service" value="Redis Service&#xa;redis-service:6379" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#f44336;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="550" y="330" width="180" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="redis-pod" value="Redis Pod&#xa;LRU Eviction&#xa;64-128Mi" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffebee;strokeColor=#f44336;" vertex="1" parent="pps-namespace">
+          <mxGeometry x="590" y="400" width="100" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Monitoring Namespace Container -->
+        <mxCell id="monitoring-namespace" value="monitoring namespace" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#2196f3;startSize=30;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="240" width="400" height="480" as="geometry" />
+        </mxCell>
+        
+        <!-- Prometheus -->
+        <mxCell id="prometheus" value="Prometheus&#xa;Port: 9090&#xa;Retention: 7d&#xa;PVC: 10Gi" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#2196f3;" vertex="1" parent="monitoring-namespace">
+          <mxGeometry x="40" y="50" width="150" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="prom-service" value="Service&#xa;prometheus-service&#xa;ClusterIP: 9090" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5ff;strokeColor=#0288d1;" vertex="1" parent="monitoring-namespace">
+          <mxGeometry x="220" y="70" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Grafana -->
+        <mxCell id="grafana" value="Grafana&#xa;Port: 3000&#xa;admin/admin123" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;" vertex="1" parent="monitoring-namespace">
+          <mxGeometry x="40" y="180" width="150" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="grafana-service" value="Service&#xa;grafana&#xa;LoadBalancer: 3000" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f8e9;strokeColor=#689f38;" vertex="1" parent="monitoring-namespace">
+          <mxGeometry x="220" y="200" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Node Exporter -->
+        <mxCell id="node-exporter" value="Node Exporter&#xa;DaemonSet&#xa;Port: 9100" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#e91e63;" vertex="1" parent="monitoring-namespace">
+          <mxGeometry x="40" y="310" width="150" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Kube State Metrics -->
+        <mxCell id="ksm" value="Kube State Metrics&#xa;Port: 8080&#xa;Cluster Metrics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#e91e63;" vertex="1" parent="monitoring-namespace">
+          <mxGeometry x="220" y="310" width="150" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Ops Team -->
+        <mxCell id="ops-team" value="Operations Team&#xa;View Dashboards" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#e1f5ff;strokeColor=#0288d1;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="100" width="60" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Edges / Connections -->
+        
+        <!-- Ingress to App Service -->
+        <mxCell id="edge2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ingress-lb" target="ingress-resource">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Ingress Resource to App Service -->
+        <mxCell id="edge3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ingress-resource" target="app-service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- App Service to Pods -->
+        <mxCell id="edge4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="app-service" target="app-pod-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="app-service" target="app-pod-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="app-service" target="app-pod-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- HPA to Pods (dashed) -->
+        <mxCell id="edge7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=5 5;" edge="1" parent="1" source="hpa" target="app-pod-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- App Pods to ConfigMap/Secret (dashed) -->
+        <mxCell id="edge8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=5 5;" edge="1" parent="1" source="app-pod-1" target="configmap">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=5 5;" edge="1" parent="1" source="app-pod-2" target="secret">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- App Pods to MongoDB -->
+        <mxCell id="edge10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="app-pod-1" target="mongo-service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- MongoDB Service to Pods -->
+        <mxCell id="edge11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="mongo-service" target="mongo-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="mongo-service" target="mongo-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- MongoDB Replication (bidirectional) -->
+        <mxCell id="edge13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;endArrow=classic;" edge="1" parent="1" source="mongo-0" target="mongo-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Init Job to MongoDB-0 (dashed) -->
+        <mxCell id="edge14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=5 5;" edge="1" parent="1" source="mongo-init" target="mongo-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- App Pods to Redis -->
+        <mxCell id="edge15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="app-pod-2" target="redis-service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Redis Service to Pod -->
+        <mxCell id="edge16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="redis-service" target="redis-pod">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Prometheus to App Pods (scraping - dashed) -->
+        <mxCell id="edge17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeColor=#ff6b6b;" edge="1" parent="1" source="prometheus" target="app-pod-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeColor=#ff6b6b;" edge="1" parent="1" source="prometheus" target="app-pod-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="edge19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeColor=#ff6b6b;" edge="1" parent="1" source="prometheus" target="app-pod-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Prometheus to Node Exporter (dashed) -->
+        <mxCell id="edge20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeColor=#ff6b6b;" edge="1" parent="1" source="prometheus" target="node-exporter">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Prometheus to KSM (dashed) -->
+        <mxCell id="edge21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeColor=#ff6b6b;" edge="1" parent="1" source="prometheus" target="ksm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Grafana to Prometheus Service -->
+        <mxCell id="edge22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="grafana" target="prom-service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Ops Team to Grafana Service -->
+        <mxCell id="edge23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ops-team" target="grafana-service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Labels -->
+        <mxCell id="label1" value="HTTP Traffic" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="110" width="80" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="label2" value="Scrapes /metrics every 15s" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#ff6b6b;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="380" width="140" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="label3" value="MongoDB Replication" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="160" y="730" width="120" height="20" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

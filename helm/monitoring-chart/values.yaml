@@ -1,0 +1,132 @@
+# Monitoring Stack Configuration
+
+# Namespace
+namespace: monitoring
+
+# Prometheus Configuration
+prometheus:
+  enabled: true
+  replicas: 1
+  image:
+    repository: prom/prometheus
+    tag: v2.45.0
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  
+  service:
+    type: ClusterIP
+    port: 9090
+  
+  # Storage configuration
+  storage:
+    enabled: true
+    storageClass: "do-block-storage"  # Change to "managed-csi" for Azure AKS
+    size: 10Gi
+  
+  # Scrape configuration
+  scrapeInterval: 15s
+  scrapeTimeout: 10s
+
+  retention: 7d
+  
+  # Target namespaces to monitor
+  targetNamespaces:
+    - pps-namespace
+    - monitoring
+
+# Grafana Configuration
+grafana:
+  enabled: true
+  replicas: 1
+  image:
+    repository: grafana/grafana
+    tag: 10.0.0
+    pullPolicy: IfNotPresent
+  
+  # Datasource configuration
+  datasource:
+    url: http://prometheus-service:9090
+  
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+  
+  service:
+    type: LoadBalancer  # Change to ClusterIP if using Ingress
+    port: 3000
+  
+  # Admin credentials
+  adminUser: admin
+  adminPassword: admin123  # Change this!
+  
+  # Data source
+  datasources:
+    prometheus:
+      url: http://prometheus-service:9090
+  
+  # Storage for dashboards
+  storage:
+    enabled: false  # Enable if you want persistent dashboards
+    storageClass: "do-block-storage"
+    size: 1Gi
+
+# Node Exporter Configuration
+nodeExporter:
+  enabled: true
+  image:
+    repository: prom/node-exporter
+    tag: v1.6.0
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  
+  service:
+    type: ClusterIP
+    port: 9100
+
+# Kube State Metrics Configuration
+kubeStateMetrics:
+  enabled: true
+  image:
+    repository: registry.k8s.io/kube-state-metrics/kube-state-metrics
+    tag: v2.9.2
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  
+  service:
+    type: ClusterIP
+    port: 8080
+    telemetryPort: 8081  # Secondary telemetry/health port exposed by kube-state-metrics
+
+# Grafana Dashboards
+dashboards:
+  enabled: true
+  # Pre-configured dashboard IDs from Grafana.com
+  dashboardIds:
+    - 1860  # Node Exporter Full
+    - 315   # Kubernetes cluster monitoring
+    - 6417  # Kubernetes Deployment Statefulset Daemonset metrics

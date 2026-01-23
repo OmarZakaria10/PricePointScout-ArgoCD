@@ -1,0 +1,14 @@
+# PVC for MongoDB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: {{ .Values.app.namespace }}
+spec:
+  # Use managed-csi for Standard SSD managed disks in AKS
+  storageClassName: {{ .Values.mongodb.storageClassName }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.mongodb.storage }}

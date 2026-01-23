@@ -1,0 +1,32 @@
+{{- if .Values.argocd.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Values.argocd.applicationName }}
+  namespace: {{ .Values.argocd.namespace }}
+spec:
+  project: {{ .Values.argocd.project }}
+  
+  source:
+    repoURL: {{ .Values.argocd.source.repoURL }}
+    targetRevision: {{ .Values.argocd.source.targetRevision }}
+    path: {{ .Values.argocd.source.path }}
+  
+  destination:
+    server: {{ .Values.argocd.destination.server }}
+    namespace: {{ .Values.app.namespace }}
+  
+  syncPolicy:
+    automated:
+      prune: {{ .Values.argocd.syncPolicy.automated.prune }}
+      selfHeal: {{ .Values.argocd.syncPolicy.automated.selfHeal }}
+      allowEmpty: {{ .Values.argocd.syncPolicy.automated.allowEmpty }}
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: {{ .Values.argocd.syncPolicy.retry.limit }}
+      backoff:
+        duration: {{ .Values.argocd.syncPolicy.retry.backoff.duration }}
+        factor: {{ .Values.argocd.syncPolicy.retry.backoff.factor }}
+        maxDuration: {{ .Values.argocd.syncPolicy.retry.backoff.maxDuration }}
+{{- end }}

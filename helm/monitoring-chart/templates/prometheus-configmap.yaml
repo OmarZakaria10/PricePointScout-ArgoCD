@@ -1,13 +1,14 @@
-# Simple Prometheus Configuration
+{{- if .Values.prometheus.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: prometheus-config
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
 data:
   prometheus.yml: |
     global:
-      scrape_interval: 15s
+      scrape_interval: {{ .Values.prometheus.scrapeInterval }}
+      scrape_timeout: {{ .Values.prometheus.scrapeTimeout }}
     
     scrape_configs:
     # Prometheus monitors itself
@@ -21,30 +22,26 @@ data:
       - role: endpoints
         namespaces:
           names:
-          - monitoring
+          - {{ .Values.namespace }}
       relabel_configs:
-      # Only scrape endpoints with the correct app label
       - source_labels: [__meta_kubernetes_service_label_app]
         action: keep
         regex: node-exporter
-      # Only scrape the metrics port
       - source_labels: [__meta_kubernetes_endpoint_port_name]
         action: keep
         regex: metrics
-      # Use the endpoint address and port
       - source_labels: [__meta_kubernetes_endpoint_address_target_kind, __meta_kubernetes_endpoint_address_target_name]
         separator: ;
         regex: Node;(.*)
         target_label: __meta_kubernetes_node_name
         replacement: $1
-      # Add node name as a label
       - source_labels: [__meta_kubernetes_node_name]
         target_label: node
     
     # Monitor Kubernetes object metrics (pods, deployments, services, etc.)
     - job_name: 'kube-state-metrics'
       static_configs:
-        - targets: ['kube-state-metrics:8080']
+        - targets: ['kube-state-metrics:{{ .Values.kubeStateMetrics.service.port }}']
       scrape_interval: 30s
     
     # Monitor Kubernetes container metrics (cAdvisor via kubelet)
@@ -66,36 +63,34 @@ data:
         target_label: __metrics_path__
         replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
     
-    # Monitor your PricePointScout app - Application metrics (with HPA support)
+    # Monitor PricePointScout application metrics
     - job_name: 'pricepointscout'
       kubernetes_sd_configs:
       - role: pod
         namespaces:
           names:
-          - pps-namespace
+          {{- range .Values.prometheus.targetNamespaces }}
+          - {{ . }}
+          {{- end }}
       relabel_configs:
-      # Only scrape pods with the correct app label
       - source_labels: [__meta_kubernetes_pod_label_app]
         action: keep
         regex: pricepointscout
-      # Only scrape pods that are running
       - source_labels: [__meta_kubernetes_pod_phase]
         action: keep
         regex: Running
-      # Use pod IP and port 8080
       - source_labels: [__meta_kubernetes_pod_ip]
         action: replace
         target_label: __address__
         replacement: $1:8080
-      # Add useful labels
       - source_labels: [__meta_kubernetes_pod_name]
         action: replace
         target_label: pod_name
       - source_labels: [__meta_kubernetes_namespace]
         action: replace
         target_label: kubernetes_namespace
-      metrics_path: '/metrics'  # Prometheus metrics endpoint
-      scrape_interval: 5s  # Scrape every 5 seconds for real-time data
+      metrics_path: '/metrics'
+      scrape_interval: 5s
     
     # Monitor Kubernetes API server metrics
     - job_name: 'kubernetes-apiservers'
@@ -110,61 +105,4 @@ data:
       - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
         action: keep
         regex: default;kubernetes;https
----
-# Simple Prometheus - Just collects basic metrics
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: prometheus
-  namespace: monitoring
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: prometheus
-  template:
-    metadata:
-      labels:
-        app: prometheus
-    spec:
-      serviceAccountName: prometheus  # Use the RBAC service account
-      containers:
-      - name: prometheus
-        image: prom/prometheus:latest
-        args:
-          - '--config.file=/etc/prometheus/prometheus.yml'
-          - '--storage.tsdb.path=/prometheus/'
-          - '--web.console.libraries=/etc/prometheus/console_libraries'
-          - '--web.console.templates=/etc/prometheus/consoles'
-          - '--storage.tsdb.retention.time=7d'  # Keep 7 days of data
-        ports:
-        - containerPort: 9090
-        resources:
-          requests:
-            cpu: 150m
-            memory: 256Mi
-          limits:
-            cpu: 300m
-            memory: 512Mi
-        volumeMounts:
-        - name: prometheus-config
-          mountPath: /etc/prometheus/
-          readOnly: true
-      volumes:
-      - name: prometheus-config
-        configMap:
-          name: prometheus-config
----
-# Service to access Prometheus
-apiVersion: v1
-kind: Service
-metadata:
-  name: prometheus
-  namespace: monitoring
-spec:
-  selector:
-    app: prometheus
-  ports:
-  - port: 9090
-    targetPort: 9090
-  type: ClusterIP  # Makes it accessible from within the cluster
+{{- end }}

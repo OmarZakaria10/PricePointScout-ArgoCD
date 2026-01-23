@@ -1,0 +1,15 @@
+apiVersion: v2
+name: monitoring-stack
+description: Complete monitoring stack with Prometheus, Grafana, and exporters for PricePointScout
+type: application
+version: 1.0.0
+appVersion: "1.0"
+keywords:
+  - monitoring
+  - prometheus
+  - grafana
+  - metrics
+home: https://github.com/OmarZakaria10/PricePointScout
+maintainers:
+  - name: Omar Zakaria
+    email: omar@example.com

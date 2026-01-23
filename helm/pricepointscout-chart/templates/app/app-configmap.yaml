@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pps-configmap
+  namespace: {{ .Values.app.namespace }}
+data:
+  NODE_ENV: "production"
+  DATABASE: "mongodb://{{- range $i := until (int .Values.mongodb.replicas) }}mongodb-{{ $i }}.mongodb-headless-service.{{ $.Values.app.namespace }}.svc.cluster.local:27017{{ if ne $i (sub (int $.Values.mongodb.replicas) 1) }},{{ end }}{{- end }}/pps?replicaSet=rs0"
+  REDIS_HOST: "redis-service"
+  PORT: "{{ .Values.app.containerPort }}"
+  JWT_EXPIRES_IN: {{ .Values.app.jwt.expiresIn | quote }}
+  JWT_COOKIE_EXPIRES_IN: {{ .Values.app.jwt.cookie.expiresIn | quote }}
+  EMAIL_HOST: "smtp.gmail.com"
+  EMAIL_PORT: "587"
+  FRONTEND_URL: "https://pricepointscout.dev"

@@ -1,0 +1,19 @@
+{{- if .Values.nodeExporter.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-exporter
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: node-exporter
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+spec:
+  clusterIP: None  # Headless service
+  ports:
+  - port: {{ .Values.nodeExporter.service.port }}
+    targetPort: {{ .Values.nodeExporter.service.port }}
+    name: metrics
+  selector:
+    app: node-exporter
+{{- end }}

@@ -1,0 +1,90 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongodb-init-replicaset
+  namespace: {{ .Values.app.namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mongo-init
+          image: mongo:6
+          command:
+            - bash
+            - -c
+            - |
+              set -e
+
+              echo "⏳ Waiting for all {{ .Values.mongodb.replicas }} MongoDB pods to be ready..."
+
+              # Wait for all MongoDB pods dynamically based on replicas count
+              {{- range $i := until (int .Values.mongodb.replicas) }}
+              echo "Checking mongodb-{{ $i }}..."
+              until mongosh --host mongodb-{{ $i }}.mongodb-headless-service.{{ $.Values.app.namespace }}.svc.cluster.local:27017 --eval "db.runCommand({ ping: 1 })" >/dev/null 2>&1; do
+                echo "  Waiting for mongodb-{{ $i }}..."
+                sleep 3
+              done
+              echo "  ✅ mongodb-{{ $i }} is ready"
+              {{- end }}
+
+              echo ""
+              echo "✅ All MongoDB pods are ready!"
+              echo ""
+
+              # Check if replica set is already initialized
+              echo "🔍 Checking if replica set already exists..."
+              RS_STATUS=$(mongosh --host mongodb-0.mongodb-headless-service.{{ .Values.app.namespace }}.svc.cluster.local:27017 --quiet --eval "try { rs.status().ok } catch(e) { 0 }" 2>/dev/null || echo "0")
+
+              if [ "$RS_STATUS" = "1" ]; then
+                echo "✅ Replica set is already initialized!"
+                echo ""
+                echo "📊 Current replica set status:"
+                mongosh --host mongodb-0.mongodb-headless-service.{{ .Values.app.namespace }}.svc.cluster.local:27017 --eval "rs.status()" || true
+                exit 0
+              fi
+
+              echo "🚀 Initiating replica set with {{ .Values.mongodb.replicas }} members..."
+              echo ""
+
+              # Initialize replica set with dynamic members
+              mongosh --host mongodb-0.mongodb-headless-service.{{ .Values.app.namespace }}.svc.cluster.local:27017 --eval "
+              rs.initiate({
+                _id: 'rs0',
+                members: [
+                  {{- range $i := until (int .Values.mongodb.replicas) }}
+                  { _id: {{ $i }}, host: 'mongodb-{{ $i }}.mongodb-headless-service.{{ $.Values.app.namespace }}.svc.cluster.local:27017' }{{ if ne $i (sub (int $.Values.mongodb.replicas) 1) }},{{ end }}
+                  {{- end }}
+                ]
+              })
+              "
+
+              echo ""
+              echo "⏳ Waiting for primary election..."
+              sleep 10
+
+              # Wait for primary to be elected (max 60 seconds)
+              for i in {1..20}; do
+                PRIMARY=$(mongosh --host mongodb-0.mongodb-headless-service.{{ .Values.app.namespace }}.svc.cluster.local:27017 --quiet --eval "rs.status().members.find(m => m.state === 1) ? 'found' : 'waiting'" 2>/dev/null || echo "waiting")
+                if [ "$PRIMARY" = "found" ]; then
+                  echo ""
+                  echo "🎉 Replica set initialization completed successfully!"
+                  echo ""
+                  echo "📊 Final replica set status:"
+                  mongosh --host mongodb-0.mongodb-headless-service.{{ .Values.app.namespace }}.svc.cluster.local:27017 --eval "rs.status()"
+                  exit 0
+                fi
+                echo "  Attempt $i/20: Waiting for primary election..."
+                sleep 3
+              done
+
+              echo ""
+              echo "⚠️  Replica set initialized but primary election taking longer than expected"
+              echo "📊 Current status:"
+              mongosh --host mongodb-0.mongodb-headless-service.{{ .Values.app.namespace }}.svc.cluster.local:27017 --eval "rs.status()" || true
+              exit 0

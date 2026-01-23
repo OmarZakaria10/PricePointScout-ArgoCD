@@ -1,0 +1,57 @@
+{{- if .Values.kubeStateMetrics.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-state-metrics
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: kube-state-metrics
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.kubeStateMetrics.replicas }}
+  selector:
+    matchLabels:
+      app: kube-state-metrics
+  template:
+    metadata:
+      labels:
+        app: kube-state-metrics
+    spec:
+      serviceAccountName: kube-state-metrics
+      containers:
+      - name: kube-state-metrics
+        image: {{ .Values.kubeStateMetrics.image.repository }}:{{ .Values.kubeStateMetrics.image.tag }}
+        ports:
+        - containerPort: {{ .Values.kubeStateMetrics.service.port }}
+          name: http-metrics
+        - containerPort: {{ default 8081 .Values.kubeStateMetrics.service.telemetryPort }}
+          name: telemetry
+        resources:
+          requests:
+            cpu: {{ .Values.kubeStateMetrics.resources.requests.cpu }}
+            memory: {{ .Values.kubeStateMetrics.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.kubeStateMetrics.resources.limits.cpu }}
+            memory: {{ .Values.kubeStateMetrics.resources.limits.memory }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http-metrics
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: telemetry
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+{{- end }}

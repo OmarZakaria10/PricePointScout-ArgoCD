@@ -1,0 +1,24 @@
+{{- if .Values.kubeStateMetrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-state-metrics
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: kube-state-metrics
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+spec:
+  clusterIP: None  # Headless service for service discovery
+  ports:
+  - name: http-metrics
+    port: {{ .Values.kubeStateMetrics.service.port }}
+    targetPort: http-metrics
+    protocol: TCP
+  - name: telemetry
+    port: {{ default 8081 .Values.kubeStateMetrics.service.telemetryPort }}
+    targetPort: telemetry
+    protocol: TCP
+  selector:
+    app: kube-state-metrics
+{{- end }}

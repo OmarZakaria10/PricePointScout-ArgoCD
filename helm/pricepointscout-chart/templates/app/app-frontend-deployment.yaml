@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pricepointscout-frontend
+  namespace: { { .Values.app.namespace } }
+  labels:
+    app: pricepointscout-frontend
+spec:
+  replicas: { { .Values.frontend.replicas } }
+  selector:
+    matchLabels:
+      app: pricepointscout-frontend
+  template:
+    metadata:
+      labels:
+        app: pricepointscout-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: { { .Values.frontend.image.pullPolicy } }
+          ports:
+            - containerPort: { { .Values.frontend.containerPort } }
+              name: http
+          resources:
+            requests:
+              cpu: { { .Values.frontend.resources.requests.cpu } }
+              memory: { { .Values.frontend.resources.requests.memory } }
+            limits:
+              cpu: { { .Values.frontend.resources.limits.cpu } }
+              memory: { { .Values.frontend.resources.limits.memory } }
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3

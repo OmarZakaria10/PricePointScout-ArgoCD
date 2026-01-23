@@ -1,12 +1,15 @@
+{{- if .Values.nodeExporter.enabled }}
 # Node Exporter - Runs on EVERY node (DaemonSet)
 # This collects system metrics from each node in your cluster
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: node-exporter
-  namespace: monitoring
+  namespace: {{ .Values.namespace }}
   labels:
     app: node-exporter
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -20,22 +23,22 @@ spec:
       hostPID: true      # Can see node's processes
       containers:
       - name: node-exporter
-        image: prom/node-exporter:latest
+        image: {{ .Values.nodeExporter.image.repository }}:{{ .Values.nodeExporter.image.tag }}
         args:
           - '--path.procfs=/host/proc'
           - '--path.sysfs=/host/sys'
           - '--collector.filesystem.ignored-mount-points'
           - '^/(sys|proc|dev|host|etc)($$|/)'
         ports:
-        - containerPort: 9100
+        - containerPort: {{ .Values.nodeExporter.service.port }}
           name: metrics
         resources:
           requests:
-            cpu: 50m
-            memory: 64Mi
+            cpu: {{ .Values.nodeExporter.resources.requests.cpu }}
+            memory: {{ .Values.nodeExporter.resources.requests.memory }}
           limits:
-            cpu: 100m
-            memory: 128Mi
+            cpu: {{ .Values.nodeExporter.resources.limits.cpu }}
+            memory: {{ .Values.nodeExporter.resources.limits.memory }}
         volumeMounts:
         - name: proc
           mountPath: /host/proc
@@ -53,20 +56,4 @@ spec:
       tolerations:
       - effect: NoSchedule
         operator: Exists  # Runs even on nodes with taints
----
-# Service for Node Exporter
-apiVersion: v1
-kind: Service
-metadata:
-  name: node-exporter
-  namespace: monitoring
-  labels:
-    app: node-exporter
-spec:
-  clusterIP: None  # Headless service
-  ports:
-  - port: 9100
-    targetPort: 9100
-    name: metrics
-  selector:
-    app: node-exporter
+{{- end }}

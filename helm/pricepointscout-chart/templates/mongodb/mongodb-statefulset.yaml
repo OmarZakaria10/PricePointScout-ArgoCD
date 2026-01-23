@@ -1,0 +1,50 @@
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: {{ .Values.app.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: mongodb # has to match .spec.template.metadata.labels
+  serviceName: "mongodb-headless-service"
+  replicas: {{ .Values.mongodb.replicas }}
+  minReadySeconds: 10
+  template:
+    metadata:
+      labels:
+        app: mongodb # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mongodb
+        image: mongo:6.0
+        command:
+        - mongod
+        - "--replSet"
+        - rs0
+        - "--bind_ip_all"
+        ports:
+        - containerPort: 27017
+          name: mongodb
+        volumeMounts:
+        - name: mongodb-storage
+          mountPath: /data/db
+        resources:
+          requests:
+            cpu: {{ .Values.mongodb.resources.requests.cpu }}
+            memory: {{ .Values.mongodb.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.mongodb.resources.limits.cpu }}
+            memory: {{ .Values.mongodb.resources.limits.memory }}
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: {{ .Values.mongodb.storageClassName }}
+      resources:
+        requests:
+          storage: {{ .Values.mongodb.storage }}
+

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pricepointscout
-  namespace: pps-namespace
+  namespace: {{ .Values.app.namespace }}
 spec:
   selector:
     matchLabels:
@@ -14,16 +14,16 @@ spec:
     spec:
       containers:
       - name: pricepointscout
-        image: omarzakaria10/price-point-scout:8e3730240a4794a030a2b7b81705308a2f17321d
+        image: {{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}
         resources:
           requests:
-            cpu: "1"
-            memory: "1Gi"
+            cpu: {{ .Values.app.resources.requests.cpu }}
+            memory: {{ .Values.app.resources.requests.memory }}
           limits:
-            cpu: "1.5"
-            memory: "3Gi"
+            cpu: {{ .Values.app.resources.limits.cpu }}
+            memory: {{ .Values.app.resources.limits.memory }}
         ports:
-        - containerPort: 8080
+        - containerPort: {{ .Values.app.containerPort }}
         envFrom:
         - configMapRef:
             name: pps-configmap
@@ -31,31 +31,17 @@ spec:
             name: pricepointscout-secret
         livenessProbe:
           httpGet:
-            path: /health
-            port: 8080
+            path: api/health
+            port: {{ .Values.app.containerPort }}
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /health
-            port: 8080
+            path: api/health
+            port: {{ .Values.app.containerPort }}
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 3
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: pricepointscout-service
-  namespace: pps-namespace
-spec:
-  selector:
-    app: pricepointscout
-  ports:
-  - port: 8080
-    targetPort: 8080
-    protocol: TCP
-  type: ClusterIP

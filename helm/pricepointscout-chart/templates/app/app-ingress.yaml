@@ -1,0 +1,65 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pricepointscout-ingress
+  namespace: {{ .Values.app.namespace }}
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- if .Values.ingress.configurationSnippet }}
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+{{ .Values.ingress.configurationSnippet | indent 6 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if and .Values.ingress.tls.enabled .Values.ingress.host }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  {{- if .Values.ingress.host }}
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+      # Backend API routes
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: pricepointscout-service
+            port:
+              number: {{ .Values.app.service.port }}
+      # Frontend routes (must be last to catch all other paths)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: pricepointscout-frontend-service
+            port:
+              number: {{ .Values.frontend.service.port }}
+  {{- else }}
+  # Fallback rule without host for IP-based access
+  - http:
+      paths:
+      # Backend API routes
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: pricepointscout-service
+            port:
+              number: {{ .Values.app.service.port }}
+      # Frontend routes (must be last to catch all other paths)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: pricepointscout-frontend-service
+            port:
+              number: {{ .Values.frontend.service.port }}
+  {{- end }}
+{{- end }}
