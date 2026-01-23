@@ -2,15 +2,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: pricepointscout-frontend-service
-  namespace: { { .Values.app.namespace } }
+  namespace: {{ .Values.app.namespace }}
   labels:
     app: pricepointscout-frontend
 spec:
-  type: { { .Values.frontend.service.type } }
+  type: {{ .Values.frontend.service.type }}
   selector:
     app: pricepointscout-frontend
   ports:
-    - port: { { .Values.frontend.service.port } }
-      targetPort: { { .Values.frontend.containerPort } }
+    - port: {{ .Values.frontend.service.port }}
+      targetPort: {{ .Values.frontend.containerPort }}
       protocol: TCP
       name: http
