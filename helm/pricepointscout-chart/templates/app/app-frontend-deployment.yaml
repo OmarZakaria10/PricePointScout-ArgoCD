@@ -2,11 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pricepointscout-frontend
-  namespace: { { .Values.app.namespace } }
+  namespace: {{ .Values.app.namespace }}
   labels:
     app: pricepointscout-frontend
 spec:
-  replicas: { { .Values.frontend.replicas } }
+  replicas: {{ .Values.frontend.replicas }}
   selector:
     matchLabels:
       app: pricepointscout-frontend
@@ -18,17 +18,17 @@ spec:
       containers:
         - name: frontend
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
-          imagePullPolicy: { { .Values.frontend.image.pullPolicy } }
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports:
-            - containerPort: { { .Values.frontend.containerPort } }
+            - containerPort: {{ .Values.frontend.containerPort }}
               name: http
           resources:
             requests:
-              cpu: { { .Values.frontend.resources.requests.cpu } }
-              memory: { { .Values.frontend.resources.requests.memory } }
+              cpu: {{ .Values.frontend.resources.requests.cpu }}
+              memory: {{ .Values.frontend.resources.requests.memory }}
             limits:
-              cpu: { { .Values.frontend.resources.limits.cpu } }
-              memory: { { .Values.frontend.resources.limits.memory } }
+              cpu: {{ .Values.frontend.resources.limits.cpu }}
+              memory: {{ .Values.frontend.resources.limits.memory }}
           livenessProbe:
             httpGet:
               path: /
