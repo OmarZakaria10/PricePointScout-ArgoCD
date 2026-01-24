@@ -43,7 +43,7 @@ frontend:
   # Frontend Image
   image:
     repository: omarzakaria10/price-point-scout-react
-    tag: "V1.0.0"
+    tag: "V1.0.3"
     pullPolicy: IfNotPresent
   
   # Frontend Port
