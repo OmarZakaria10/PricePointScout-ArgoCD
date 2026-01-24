@@ -5,7 +5,7 @@ app:
   # Application Image
   image:
     repository: omarzakaria10/price-point-scout
-    tag: "3e203ae6a7455d4c03d5802c82baa80d443544d4"
+    tag: "ba804790e1f1a373736968c1634d7f645536a881"
     pullPolicy: IfNotPresent
   
   # Application Port
@@ -14,8 +14,8 @@ app:
   # Application Resources
   resources:
     requests:
-      cpu: "2"
-      memory: "2Gi"
+      cpu: "1.5"
+      memory: "1.5Gi"
     limits:
       cpu: "2.5"
       memory: "3Gi"
@@ -43,7 +43,7 @@ frontend:
   # Frontend Image
   image:
     repository: omarzakaria10/price-point-scout-react
-    tag: "V1.0.1"
+    tag: "V1.0.0"
     pullPolicy: IfNotPresent
   
   # Frontend Port
@@ -150,14 +150,16 @@ argocd:
   source:
     repoURL: https://github.com/OmarZakaria10/PricePointScout-ArgoCD.git
     targetRevision: main
-    path: helm
+    path: helm/pricepointscout-chart
+    helm:
+      releaseName: pricepointscout
   
   destination:
     server: https://kubernetes.default.svc
   
   syncPolicy:
     automated:
-      prune: true
+      prune: false  # Changed to false to prevent wiping resources
       selfHeal: true
       allowEmpty: false
     retry:

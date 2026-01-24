@@ -11,6 +11,10 @@ spec:
     repoURL: {{ .Values.argocd.source.repoURL }}
     targetRevision: {{ .Values.argocd.source.targetRevision }}
     path: {{ .Values.argocd.source.path }}
+    {{- if .Values.argocd.source.helm }}
+    helm:
+      releaseName: {{ .Values.argocd.source.helm.releaseName }}
+    {{- end }}
   
   destination:
     server: {{ .Values.argocd.destination.server }}
