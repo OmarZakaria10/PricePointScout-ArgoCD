@@ -5,7 +5,7 @@ app:
   # Application Image
   image:
     repository: omarzakaria10/price-point-scout
-    tag: "45ff8e037f96a25335a942c101f19210d17822b7"
+    tag: "0c4cdb07bf2d25bc1d4f20fd9adf53341ff29a60"
     pullPolicy: IfNotPresent
   
   # Application Port
@@ -43,7 +43,7 @@ frontend:
   # Frontend Image
   image:
     repository: omarzakaria10/price-point-scout-react
-    tag: "V1.0.0"
+    tag: "0c4cdb07bf2d25bc1d4f20fd9adf53341ff29a60"
     pullPolicy: IfNotPresent
   
   # Frontend Port
