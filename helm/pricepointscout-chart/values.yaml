@@ -14,8 +14,8 @@ app:
   # Application Resources
   resources:
     requests:
-      cpu: "2"
-      memory: "2Gi"
+      cpu: "1.8"
+      memory: "1.8Gi"
     limits:
       cpu: "2.5"
       memory: "3Gi"
