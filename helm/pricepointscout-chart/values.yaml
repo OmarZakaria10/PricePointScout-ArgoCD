@@ -14,8 +14,8 @@ app:
   # Application Resources
   resources:
     requests:
-      cpu: "1.5"
-      memory: "1.5Gi"
+      cpu: "2"
+      memory: "2Gi"
     limits:
       cpu: "2.5"
       memory: "3Gi"
@@ -68,7 +68,7 @@ frontend:
 
 # MongoDB Configuration
 mongodb:
-  replicas: 2  # Can be 2, 3, or any number
+  replicas: 3  # Can be 2, 3, or any number
   storageClassName: "do-block-storage"  # DigitalOcean Block Storage (use "managed-csi" for Azure AKS)
   storage: "1Gi"
   
